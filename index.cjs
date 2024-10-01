@@ -2,10 +2,16 @@
 
 const express = require("express");
 const cors = require("cors");
+const morgan = require("morgan")
 const app = express();
 app.use(express.json());
 app.use(cors());
 
+morgan.token("data", (req, res) => {
+    return req.method === "POST" ? JSON.stringify(req.body) : "";
+})
+
+app.use(morgan(":method :url :port :response-time :data"))
 
 let notes = [
     {
@@ -61,18 +67,18 @@ app.delete('/api/notes/:id', (request, response) => {
 app.post("/api/notes", (request, response) => {
     const body = request.body
 
-    if(!body.content){
+    if (!body.content) {
         return response.status(400).json(
             {
-                error:"content missing"
+                error: "content missing"
             }
         )
     }
 
     const note = {
-        content : body.content,
-        id : generateID(),
-        important : Boolean(body.important) || false
+        content: body.content,
+        id: generateID(),
+        important: Boolean(body.important) || false
     }
 
     notes = notes.concat(note)
@@ -81,6 +87,7 @@ app.post("/api/notes", (request, response) => {
 })
 
 const PORT = process.env.PORT || 3001
+
 app.listen(PORT, () => {
     console.log(`Server running on PORT ${PORT}`);
 })
